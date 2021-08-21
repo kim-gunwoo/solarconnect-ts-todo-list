@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const TodoHeadBlock = styled.div`
@@ -21,10 +21,26 @@ const DayText = styled.div`
   padding-top: 5px;
 `;
 
+const INTERVAL_TIME = 1000 * 60;
+const LOCALES = "en-US";
+
 const TodoHead = () => {
-  //@TODO 현재 시간을 표시해야합니다.
-  const dayString = "Tuesday";
-  const dateString = "July 20, 2021";
+  const [today, setToday] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setToday(new Date()), INTERVAL_TIME);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dayString = today.toLocaleDateString(LOCALES, {
+    weekday: "long",
+  });
+
+  const dateString = today.toLocaleDateString(LOCALES, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <TodoHeadBlock>
