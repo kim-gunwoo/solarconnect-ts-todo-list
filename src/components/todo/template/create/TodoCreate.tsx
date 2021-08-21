@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { PlusCircleOutlined } from "@ant-design/icons";
+import { DatePicker, Modal } from "antd";
 import { Itodo } from "components/todo/TodoService";
+import moment from "moment";
 
-const CircleButton = styled.button<{ open: boolean }>`
+const CircleButton = styled.button`
   background: #33bb77;
   width: 50px;
   height: 50px;
@@ -19,11 +21,13 @@ const CircleButton = styled.button<{ open: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 `;
 
 const InsertFormPositioner = styled.div`
   width: 100%;
   border-bottom: 1px solid #eeeeee;
+  text-align: center;
 `;
 
 const InsertForm = styled.form`
@@ -49,50 +53,58 @@ const Input = styled.input`
   }
 `;
 
+const StyleDatePicker = styled(DatePicker)`
+  width: 180px;
+`;
+
 interface TodoCreateProps {
-  nextId: number;
   createTodo: (todo: Itodo) => void;
-  incrementNextId: () => void;
+  incrementNextId: () => number;
 }
 
-const TodoCreate = ({
-  nextId,
-  createTodo,
-  incrementNextId
-}: TodoCreateProps) => {
-  const [open, setOpen] = useState(false);
+const TodoCreate = ({ createTodo, incrementNextId }: TodoCreateProps) => {
   const [value, setValue] = useState("");
+  const [date, setDate] = useState("");
 
-  const handleToggle = () => setOpen(!open);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setValue(e.target.value);
+
+  const handleDate = (_: any, dateString: string) => setDate(dateString);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // 새로고침 방지
 
+    if (!value.trim() || !date) {
+      Modal.info({ title: "마감기한 및 할 일을 입력해주세요." });
+      return;
+    }
+
     createTodo({
-      id: nextId,
+      id: incrementNextId(), // nextId 하나 증가
       text: value,
-      done: false
+      done: false,
+      date,
     });
-    incrementNextId(); // nextId 하나 증가
 
     setValue(""); // input 초기화
-    setOpen(false); // open 닫기
+    setDate("");
   };
 
   return (
     <>
       <InsertFormPositioner>
         <InsertForm onSubmit={handleSubmit}>
+          <StyleDatePicker
+            onChange={handleDate}
+            value={date !== "" ? moment(date) : null}
+          />
           <Input
             autoFocus
             placeholder="What's need to be done?"
             onChange={handleChange}
             value={value}
           />
-
-          <CircleButton onClick={handleToggle} open={open}>
+          <CircleButton type="submit">
             <PlusCircleOutlined />
           </CircleButton>
         </InsertForm>
